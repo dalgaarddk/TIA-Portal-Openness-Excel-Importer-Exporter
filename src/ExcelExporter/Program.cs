@@ -60,7 +60,7 @@ namespace ExcelExporter
                 {
                     xlApp = new Microsoft.Office.Interop.Excel.Application();
                     workbook = xlApp.Workbooks.Add();
-                    worksheet = workbook.Worksheets[1];
+                    worksheet = (Microsoft.Office.Interop.Excel.Worksheet)workbook.Worksheets[1];
 
                         writeToCells(ref worksheet, differences);
 

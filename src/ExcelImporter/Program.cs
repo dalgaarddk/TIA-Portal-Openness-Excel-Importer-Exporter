@@ -54,8 +54,15 @@ namespace ExcelImporter
                 {
                     xlApp = new Microsoft.Office.Interop.Excel.Application();
                     workbook = xlApp.Workbooks.Open((Directory.GetCurrentDirectory() + "\\" + filename));
-                    worksheet = workbook.Worksheets[1];
-                    range = workbook.ActiveSheet.UsedRange;
+                    worksheet = (Microsoft.Office.Interop.Excel.Worksheet)workbook.Worksheets[1];
+                    if (worksheet != null)
+                    {
+                        range = worksheet.UsedRange;
+                    }
+                    else
+                    {
+                        throw new InvalidCastException("ActiveSheet is not a Worksheet.");
+                    }
 
 
                     if (!File.Exists(file))
@@ -85,7 +92,7 @@ namespace ExcelImporter
 
                     while (true)
                     {
-                        if (worksheet.Cells[1][tableRow].value2 == null)
+                        if (worksheet.Range[1, tableRow].Value2 == null)
                         {
                             break; // end of file
                         }
@@ -93,18 +100,18 @@ namespace ExcelImporter
                         while (true)
                         {
                             //Check if cell is empty and add to dictonary
-                            if (worksheet.Cells[tableColumn][tableRow].value2 == null)
+                            if (worksheet.Range[tableColumn,tableRow].Value2 == null)
                             {
-                                propertyNameValues.Add(worksheet.Cells[tableColumn][1].value2, "");
+                                propertyNameValues.Add(worksheet.Range[tableColumn,1].Value2.ToString(), "");
                             }
                             else
                             {
-                                propertyNameValues.Add(worksheet.Cells[tableColumn][1].value2, worksheet.Cells[tableColumn][tableRow].value2);
+                                propertyNameValues.Add(worksheet.Range[tableColumn, 1].Value2.ToString(), worksheet.Range[tableColumn, tableRow].Value2.ToString());
                             }
 
                             tableColumn++;
                             //check if all attributes are read in and Create the Screen Item 
-                            if (worksheet.Cells[tableColumn][1].value2 == null)
+                            if (worksheet.Range[tableColumn, 1].Value2 == null)
                             {
                                 tableColumn = 1;
                                 break;
@@ -115,9 +122,9 @@ namespace ExcelImporter
                         tableRow++;
                     }
 
-                    for (int tableRow_ = 2; worksheet.Cells[1][tableRow_].value2 != null; tableRow_++)
+                    for (int tableRow_ = 2; worksheet.Range[1, tableRow_].Value2 != null; tableRow_++)
                     {
-                        for (int tableColumn_ = 1; worksheet.Cells[tableColumn_][1].value2 != null; tableColumn_++)
+                        for (int tableColumn_ = 1; worksheet.Range[tableColumn_, 1].Value2 != null; tableColumn_++)
                         { }
                     }
 
