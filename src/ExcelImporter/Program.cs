@@ -29,7 +29,7 @@ namespace ExcelImporter
         public static UnifiedOpennessConnector unifiedData = null;
         static void Main(string[] args)
         {
-            using (var unifiedData = new UnifiedOpennessConnector("V19", args, new List<CmdArgument>(), "ExcelImporter"))
+            using (var unifiedData = new UnifiedOpennessConnector("V20", args, new List<CmdArgument>(), "ExcelImporter"))
             {
                 Program.unifiedData = unifiedData;
                 Work();
@@ -40,7 +40,7 @@ namespace ExcelImporter
         static void Work()
         {
             //2.Open Excel sheet
-            string[] files = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xlsx");
+            var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xlsx").Where<string>(x => !Path.GetFileName(x).StartsWith("~$"));
             //iterate over every file
             foreach (string file in files)
             {
@@ -55,15 +55,7 @@ namespace ExcelImporter
                     xlApp = new Microsoft.Office.Interop.Excel.Application();
                     workbook = xlApp.Workbooks.Open((Directory.GetCurrentDirectory() + "\\" + filename));
                     worksheet = (Microsoft.Office.Interop.Excel.Worksheet)workbook.Worksheets[1];
-                    if (worksheet != null)
-                    {
-                        range = worksheet.UsedRange;
-                    }
-                    else
-                    {
-                        throw new InvalidCastException("ActiveSheet is not a Worksheet.");
-                    }
-
+                    range = worksheet.UsedRange;
 
                     if (!File.Exists(file))
                     {
@@ -71,8 +63,6 @@ namespace ExcelImporter
                         unifiedData.Log("Please place a file with name '" + filename + "' next to the app!", LogLevel.Error);
                         return;
                     }
-
-
 
                     // get screen filename=foo.xlsx
                     var screenName = filename.Split('.')[0];
@@ -92,7 +82,7 @@ namespace ExcelImporter
 
                     while (true)
                     {
-                        if (worksheet.Range[1, tableRow].Value2 == null)
+                        if (worksheet.Cells[tableRow, 1].Value2 == null || worksheet.Cells[tableRow, 1].Value2 == "")
                         {
                             break; // end of file
                         }
@@ -100,18 +90,18 @@ namespace ExcelImporter
                         while (true)
                         {
                             //Check if cell is empty and add to dictonary
-                            if (worksheet.Range[tableColumn,tableRow].Value2 == null)
+                            if (worksheet.Cells[tableRow, tableColumn].Value2 == null)
                             {
-                                propertyNameValues.Add(worksheet.Range[tableColumn,1].Value2.ToString(), "");
+                                propertyNameValues.Add(worksheet.Cells[1, tableColumn].Value2.ToString(), "");
                             }
                             else
                             {
-                                propertyNameValues.Add(worksheet.Range[tableColumn, 1].Value2.ToString(), worksheet.Range[tableColumn, tableRow].Value2.ToString());
+                                propertyNameValues.Add(worksheet.Cells[1, tableColumn].Value2.ToString(), worksheet.Cells[tableRow, tableColumn].Value2);
                             }
 
                             tableColumn++;
                             //check if all attributes are read in and Create the Screen Item 
-                            if (worksheet.Range[tableColumn, 1].Value2 == null)
+                            if (worksheet.Cells[1, tableColumn].Value2 == null || worksheet.Cells[1, tableColumn].Value2 == "")
                             {
                                 tableColumn = 1;
                                 break;
@@ -122,9 +112,9 @@ namespace ExcelImporter
                         tableRow++;
                     }
 
-                    for (int tableRow_ = 2; worksheet.Range[1, tableRow_].Value2 != null; tableRow_++)
+                    for (int tableRow_ = 2; worksheet.Cells[tableRow_, 1].Value2 != null; tableRow_++)
                     {
-                        for (int tableColumn_ = 1; worksheet.Range[tableColumn_, 1].Value2 != null; tableColumn_++)
+                        for (int tableColumn_ = 1; worksheet.Cells[1, tableColumn_].Value2 != null; tableColumn_++)
                         { }
                     }
 
@@ -132,6 +122,7 @@ namespace ExcelImporter
                 finally
                 {
                     workbook.Close();
+                    xlApp.Quit();
                     Marshal.ReleaseComObject(xlApp);
                     Marshal.ReleaseComObject(workbook);
                     Marshal.ReleaseComObject(worksheet);

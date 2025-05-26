@@ -13,7 +13,7 @@ namespace ExcelExporter
         public static UnifiedOpennessConnector unifiedData = null;
         static void Main(string[] args)
         {
-            using (var unifiedData = new UnifiedOpennessConnector("V19", args, new List<CmdArgument>() { new CmdArgument()
+            using (var unifiedData = new UnifiedOpennessConnector("V20", args, new List<CmdArgument>() { new CmdArgument()
             {
                 Default = "", Required = false, OptionToSet = "DefinedAttributes", OptionLong = "--definedattributes", OptionShort = "-da", HelpText = "If you want to export only defined attributes, add a list seperated by semicolon, e.g. Left;Top;Authorization"
             } }, "ExcelExporter"))
